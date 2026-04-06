@@ -1,0 +1,1 @@
+# ha-apartment-config-public
