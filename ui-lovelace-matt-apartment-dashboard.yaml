@@ -1,0 +1,319 @@
+title: Apartment Dashboard
+icon: mdi:office-building-outline
+show_in_sidebar: true
+require_admin: false
+
+views:
+  - title: Main
+    path: main
+    type: sections
+    icon: mdi:home-variant-outline
+    sections:
+      - type: grid
+        cards:
+          - type: glance
+            title: House Status
+            show_state: true
+            show_name: true
+            columns: 4
+            entities:
+              - entity: person.primary_user
+                name: Primary User
+              - entity: device_tracker.primary_phone
+                name: iPhone
+              - entity: input_boolean.bedtime_mode
+                name: Bedtime
+              - entity: sun.sun
+                name: Sun
+              - entity: weather.forecast_home
+                name: Weather
+              - entity: binary_sensor.front_door
+                name: Front Door
+              - entity: binary_sensor.side_door
+                name: Side Door
+              - entity: binary_sensor.entry_sensors
+                name: Entry
+              - entity: binary_sensor.hallway_occupied
+                name: Hallway
+              - entity: binary_sensor.living_room_occupied
+                name: Living Room
+              - entity: binary_sensor.hallway_motion_sensor
+                name: Hall Motion
+              - entity: binary_sensor.living_room_motion_sensor
+                name: LR Motion
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Living Room
+            state_color: true
+            entities:
+              - entity: light.living_room_all
+              - entity: light.breakfast_nook_light
+              - entity: light.living_room_lamp_1
+              - entity: light.living_room_lamp_2
+              - entity: light.living_room_lamp_3
+              - entity: light.living_room_lamp_4
+              - entity: switch.smart_plug
+                name: TV
+              - entity: switch.living_room_wax_warmer
+                name: Wax Warmer
+              - entity: binary_sensor.living_room_motion_sensor
+              - entity: binary_sensor.living_room_occupied
+                name: Living Room Occupied
+              - entity: automation.living_room_welcome_and_motion_smart
+                name: Welcome + Motion
+          - type: media-control
+            entity: media_player.living_room
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Outside / Entry
+            state_color: true
+            entities:
+              - entity: light.front_door_light
+              - entity: light.back_door_light
+              - entity: light.hallway_light
+              - entity: binary_sensor.front_door
+              - entity: binary_sensor.side_door
+              - entity: binary_sensor.entry_sensors
+              - entity: automation.outside_light_automation
+                name: Outside Lights On
+              - entity: automation.outside_lights_off
+                name: Outside Lights Off
+
+          - type: entities
+            title: Kitchen / Nook
+            state_color: true
+            entities:
+              - entity: light.kitchen_light
+              - entity: switch.kitchen_wax_warmer
+                name: Wax Warmer
+              - entity: light.breakfast_nook_light
+              - entity: binary_sensor.kitchen_motion_sensor
+              - entity: binary_sensor.kitchen_motion_sensor_2
+              - entity: automation.kitchen_light_sensor
+              - entity: sensor.lumi_lumi_weather_temperature_3
+                name: Temp
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Bedroom / Hallway
+            state_color: true
+            entities:
+              - entity: light.bedroom_lamps
+              - entity: light.bedroom_lamp_1
+              - entity: light.bedroom_lamp_2
+              - entity: light.bedroom_ceiling_light
+              - entity: binary_sensor.bedroom_motion_sensor
+              - entity: automation.bedroom_light_sensor
+              - entity: binary_sensor.hallway_motion_sensor
+              - entity: binary_sensor.hallway_occupied
+                name: Hallway Occupied
+              - entity: automation.hallway_light_sensor
+              - entity: automation.hallway_night_path_light
+                name: Night Path Light
+
+          - type: entities
+            title: House Modes
+            state_color: true
+            entities:
+              - entity: input_boolean.bedtime_mode
+              - entity: automation.house_bedtime_shutdown
+                name: Bedtime Shutdown
+              - entity: automation.house_bedtime_quiet_hours_off
+                name: Bedtime Quiet Hours Off
+              - entity: automation.house_away_cleanup
+                name: Away Cleanup
+              - entity: sensor.sun_next_dawn
+              - entity: sensor.sun_next_dusk
+
+  - title: Safety
+    path: safety
+    type: sections
+    icon: mdi:shield-alert-outline
+    sections:
+      - type: grid
+        cards:
+          - type: glance
+            title: Safety Snapshot
+            show_state: true
+            show_name: true
+            columns: 4
+            entities:
+              - entity: binary_sensor.front_door
+                name: Front Door
+              - entity: binary_sensor.side_door
+                name: Side Door
+              - entity: input_boolean.bedtime_mode
+                name: Bedtime
+              - entity: binary_sensor.living_room_wax_warmer_overheated
+                name: LR Hot
+              - entity: binary_sensor.living_room_wax_warmer_overloaded
+                name: LR Overload
+              - entity: binary_sensor.kitchen_wax_warmer_overheated
+                name: Kitchen Hot
+              - entity: binary_sensor.kitchen_wax_warmer_overloaded
+                name: Kitchen Overload
+              - entity: sensor.living_room_ups_status
+                name: LR UPS
+              - entity: sensor.bedroom_ups_status
+                name: Bedroom UPS
+              - entity: person.primary_user
+                name: Primary User
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Wax Warmer Safety
+            state_color: true
+            entities:
+              - entity: switch.living_room_wax_warmer
+              - entity: binary_sensor.living_room_wax_warmer_overheated
+              - entity: binary_sensor.living_room_wax_warmer_overloaded
+              - entity: sensor.living_room_wax_warmer_current
+              - entity: sensor.living_room_wax_warmer_voltage
+              - entity: switch.kitchen_wax_warmer
+              - entity: binary_sensor.kitchen_wax_warmer_overheated
+              - entity: binary_sensor.kitchen_wax_warmer_overloaded
+              - entity: sensor.kitchen_wax_warmer_current
+              - entity: sensor.kitchen_wax_warmer_voltage
+              - entity: automation.safety_wax_warmers_off_when_unsafe
+                name: Wax Warmer Safety
+
+          - type: entities
+            title: UPS Safety / Outage
+            state_color: true
+            entities:
+              - entity: sensor.living_room_ups_status
+              - entity: sensor.living_room_ups_status_data
+              - entity: sensor.ups2_battery_runtime
+              - entity: sensor.living_room_ups_load
+              - entity: sensor.bedroom_ups_status
+              - entity: sensor.bedroom_ups_status_data
+              - entity: sensor.myups_battery_runtime
+              - entity: automation.ups_power_outage_response_living_room
+                name: UPS Outage Response
+              - entity: automation.ups_power_restored_notification_living_room
+                name: UPS Restored Notice
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Safety Automations
+            state_color: true
+            entities:
+              - entity: automation.safety_wax_warmers_off_when_unsafe
+              - entity: automation.house_bedtime_shutdown
+              - entity: automation.house_bedtime_quiet_hours_off
+              - entity: automation.hallway_night_path_light
+              - entity: automation.house_away_cleanup
+
+  - title: Network / Power
+    path: network-power
+    type: sections
+    icon: mdi:server-network-outline
+    sections:
+      - type: grid
+        cards:
+          - type: glance
+            title: Internet Health
+            show_state: true
+            show_name: true
+            columns: 4
+            entities:
+              - entity: binary_sensor.tp_link_deco_router_wan_status
+                name: WAN
+              - entity: sensor.cable_modem_status
+                name: Modem
+              - entity: sensor.cable_modem_ping_latency
+                name: Ping
+              - entity: sensor.cable_modem_http_latency
+                name: HTTP
+              - entity: sensor.tp_link_deco_router_download_speed
+                name: Down
+              - entity: sensor.tp_link_deco_router_upload_speed
+                name: Up
+              - entity: sensor.tp_link_deco_router_cpu_used
+                name: Router CPU
+              - entity: sensor.tp_link_deco_router_memory_used
+                name: Router RAM
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Router
+            state_color: true
+            entities:
+              - entity: binary_sensor.tp_link_deco_router_wan_status
+              - entity: sensor.tp_link_deco_router_total_main_wifi_clients
+                name: Main WiFi Clients
+              - entity: sensor.tp_link_deco_router_total_guest_wifi_clients
+                name: Guest WiFi Clients
+              - entity: sensor.tp_link_deco_router_total_iot_clients
+                name: IoT Clients
+              - entity: sensor.tp_link_deco_router_total_wired_clients
+                name: Wired Clients
+              - entity: sensor.tp_link_deco_router_total_clients
+                name: Total Clients
+              - entity: sensor.tp_link_deco_router_download_speed
+                name: Download Speed
+              - entity: sensor.tp_link_deco_router_upload_speed
+                name: Upload Speed
+              - entity: sensor.tp_link_deco_router_cpu_used
+                name: CPU Used
+              - entity: sensor.tp_link_deco_router_memory_used
+                name: Memory Used
+              - entity: button.reboot
+                name: Reboot Router
+
+          - type: entities
+            title: Modem
+            state_color: true
+            entities:
+              - entity: sensor.cable_modem_status
+              - entity: sensor.cable_modem_ping_latency
+                name: Ping Latency
+              - entity: sensor.cable_modem_http_latency
+                name: HTTP Latency
+              - entity: sensor.cable_modem_system_uptime
+                name: Uptime
+              - entity: sensor.cable_modem_last_boot_time
+                name: Last Boot
+              - entity: sensor.cable_modem_total_corrected_errors
+                name: Corrected Errors
+              - entity: sensor.cable_modem_total_uncorrected_errors
+                name: Uncorrected Errors
+              - entity: switch.modem_plug
+                name: Modem Plug
+              - entity: button.cable_modem_restart_modem
+                name: Reboot Modem
+
+      - type: grid
+        cards:
+          - type: entities
+            title: Power / UPS
+            state_color: true
+            entities:
+              - entity: sensor.living_room_ups_status
+              - entity: sensor.living_room_ups_status_data
+              - entity: sensor.ups2_battery_runtime
+              - entity: sensor.living_room_ups_battery_charge
+              - entity: sensor.living_room_ups_input_voltage
+              - entity: sensor.living_room_ups_output_voltage
+              - entity: sensor.bedroom_ups_status
+              - entity: sensor.bedroom_ups_status_data
+              - entity: sensor.myups_battery_runtime
+
+          - type: entities
+            title: Network Recovery
+            state_color: true
+            entities:
+              - entity: automation.network_guarded_recovery
+                name: Guarded Recovery
+              - entity: automation.network_recovery_restored_notification
+                name: Restored Notification
+              - entity: automation.ups_power_outage_response_living_room
+              - entity: automation.ups_power_restored_notification_living_room

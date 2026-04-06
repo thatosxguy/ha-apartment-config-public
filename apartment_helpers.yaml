@@ -1,0 +1,21 @@
+template:
+  - binary_sensor:
+      - name: Living Room Occupied
+        unique_id: living_room_occupied_helper
+        state: >-
+          {{
+            is_state('binary_sensor.living_room_motion_sensor', 'on')
+            or is_state('media_player.living_room', 'playing')
+          }}
+        device_class: occupancy
+
+      - name: Hallway Occupied
+        unique_id: hallway_occupied_helper
+        state: >-
+          {{
+            is_state('binary_sensor.hallway_motion_sensor', 'on')
+            or is_state('binary_sensor.front_door', 'on')
+            or is_state('binary_sensor.side_door', 'on')
+            or is_state('binary_sensor.entry_sensors', 'on')
+          }}
+        device_class: occupancy

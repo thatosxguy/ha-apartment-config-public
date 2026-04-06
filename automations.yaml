@@ -1,0 +1,742 @@
+- id: living_room_welcome_and_motion_smart
+  alias: Living Room - Welcome and Motion Smart
+  description: Keep living room and hallway lighting simple and reliable. Doors turn on hallway and living room lights, motion turns on living room lights, and no automatic off is used so manual control is respected.
+  mode: restart
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.front_door
+      from: "off"
+      to: "on"
+    - trigger: state
+      entity_id: binary_sensor.side_door
+      from: "off"
+      to: "on"
+    - trigger: state
+      entity_id: binary_sensor.living_room_motion_sensor
+      from: "off"
+      to: "on"
+  variables:
+    is_door_trigger: "{{ trigger.entity_id in ['binary_sensor.front_door', 'binary_sensor.side_door'] }}"
+    is_motion_trigger: "{{ trigger.entity_id == 'binary_sensor.living_room_motion_sensor' }}"
+    is_late_night: "{{ now().hour >= 23 or now().hour < 6 }}"
+  actions:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ is_motion_trigger and is_state('input_boolean.bedtime_mode', 'on') }}"
+          sequence:
+            - stop: Motion lighting is blocked during bedtime mode.
+
+        - conditions:
+            - condition: template
+              value_template: "{{ is_door_trigger and is_late_night }}"
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.hallway_light
+              data:
+                transition: 1
+                brightness_pct: 25
+            - action: light.turn_on
+              target:
+                entity_id:
+                  - light.breakfast_nook_light
+                  - light.living_room_lamp_1
+                  - light.living_room_lamp_2
+                  - light.living_room_lamp_3
+                  - light.living_room_lamp_4
+              data:
+                transition: 1
+                brightness_pct: 30
+
+        - conditions:
+            - condition: template
+              value_template: "{{ is_door_trigger }}"
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.hallway_light
+              data:
+                transition: 1
+            - action: light.turn_on
+              target:
+                entity_id:
+                  - light.breakfast_nook_light
+                  - light.living_room_lamp_1
+                  - light.living_room_lamp_2
+                  - light.living_room_lamp_3
+                  - light.living_room_lamp_4
+              data:
+                transition: 1
+
+        - conditions:
+            - condition: template
+              value_template: "{{ is_motion_trigger and is_late_night }}"
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id:
+                  - light.breakfast_nook_light
+                  - light.living_room_lamp_1
+                  - light.living_room_lamp_2
+                  - light.living_room_lamp_3
+                  - light.living_room_lamp_4
+              data:
+                transition: 1
+                brightness_pct: 30
+      default:
+        - action: light.turn_on
+          target:
+            entity_id:
+              - light.breakfast_nook_light
+              - light.living_room_lamp_1
+              - light.living_room_lamp_2
+              - light.living_room_lamp_3
+              - light.living_room_lamp_4
+          data:
+            transition: 1
+
+- actions:
+  - action: light.turn_on
+    data: {}
+    metadata: {}
+    target:
+      area_id: outside
+  alias: 'Outside light automation '
+  conditions: []
+  description: ''
+  id: '1749911479215'
+  mode: single
+  triggers:
+  - event: sunset
+    offset: 0
+    trigger: sun
+
+- actions:
+  - action: light.turn_off
+    data: {}
+    metadata: {}
+    target:
+      area_id: outside
+  alias: Outside Lights off
+  conditions: []
+  description: ''
+  id: '1749911552276'
+  mode: single
+  triggers:
+  - event: sunrise
+    offset: 0
+    trigger: sun
+
+- alias: Kitchen Light Sensor
+  description: ''
+  id: '1750461090461'
+  use_blueprint:
+    input:
+      light_target:
+        area_id: kitchen
+      motion_entity:
+      - binary_sensor.kitchen_motion_sensor
+      - binary_sensor.kitchen_motion_sensor_2
+      no_motion_wait: 90
+    path: homeassistant/motion_light.yaml
+
+- actions:
+  - action: light.turn_on
+    target:
+      entity_id: light.bedroom_lamps
+  - choose:
+    - conditions:
+      - condition: time
+        weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+      - before: '20:00:00'
+        condition: time
+      sequence:
+      - wait_for_trigger:
+        - entity_id: binary_sensor.bedroom_motion_sensor
+          for:
+            minutes: 4
+          from: 'on'
+          to: 'off'
+          trigger: state
+      - action: light.turn_off
+        target:
+          entity_id: light.bedroom_lamps
+    - conditions:
+      - condition: time
+        weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+      - after: '20:00:00'
+        before: '21:00:00'
+        condition: time
+      sequence:
+      - wait_for_trigger:
+        - entity_id: binary_sensor.bedroom_motion_sensor
+          for:
+            seconds: 30
+          from: 'on'
+          to: 'off'
+          trigger: state
+      - action: light.turn_off
+        target:
+          entity_id: light.bedroom_lamps
+    - conditions:
+      - condition: time
+        weekday:
+        - fri
+        - sat
+      - before: '23:00:00'
+        condition: time
+      sequence:
+      - wait_for_trigger:
+        - entity_id: binary_sensor.bedroom_motion_sensor
+          for:
+            minutes: 4
+          from: 'on'
+          to: 'off'
+          trigger: state
+      - action: light.turn_off
+        target:
+          entity_id: light.bedroom_lamps
+    default:
+    - wait_for_trigger:
+      - entity_id: binary_sensor.bedroom_motion_sensor
+        for:
+          minutes: 2
+        from: 'on'
+        to: 'off'
+        trigger: state
+    - action: light.turn_off
+      target:
+        entity_id: light.bedroom_lamps
+  alias: Bedroom Light Sensor
+  conditions:
+  - condition: template
+    value_template: '{{ not force_skip }}'
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: time
+        weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+      - after: 06:30:00
+        before: '21:00:00'
+        condition: time
+    - condition: and
+      conditions:
+      - condition: time
+        weekday:
+        - fri
+        - sat
+      - after: 09:00:00
+        before: '23:00:00'
+        condition: time
+  description: Time-aware motion lighting for bedroom lamps
+  id: '1750461684124'
+  max_exceeded: silent
+  mode: restart
+  triggers:
+  - entity_id: binary_sensor.bedroom_motion_sensor
+    from: 'off'
+    to: 'on'
+    trigger: state
+  variables:
+    force_skip: "{{ skip_light_on and\n    (expand(\n      (([] if target_lights.device_id is undefined\n        else target_lights.device_id | device_entities\n        if target_lights.device_id is string\n        else target_lights.device_id | map('device_entities') | sum(start=[]))\n      +\n      ([] if target_lights.entity_id is undefined\n        else [target_lights.entity_id]\n        if target_lights.entity_id is string\n        else target_lights.entity_id))\n    )\n    | select('search', '^light\\.')\n    | selectattr('state', 'eq', 'on')\n    | list\n    | length > 0)\n}}\n"
+    skip_light_on: true
+    target_lights:
+      entity_id: light.bedroom_lamps
+
+- alias: UPS Battery and Status Monitor (NUT) (Living Room)
+  description: ''
+  id: '1752543402171'
+  use_blueprint:
+    input:
+      battery_charge: sensor.living_room_ups_battery_charge
+      battery_voltage: sensor.ups2_battery_voltage
+      notify_device: YOUR_NOTIFY_DEVICE_ID
+      self_test_result: sensor.ups2_self_test_result
+      ups_status: sensor.living_room_ups_status_data
+      ups_status_data: sensor.living_room_ups_status
+    path: 007hacky007/ups_monitor.yaml
+
+- alias: UPS Battery and Status Monitor (NUT) (Office)
+  description: ''
+  id: '1752543578330'
+  use_blueprint:
+    input:
+      battery_charge: sensor.ups3_battery_charge
+      battery_voltage: sensor.ups3_battery_voltage
+      notify_device: YOUR_NOTIFY_DEVICE_ID
+      self_test_result: sensor.ups3_self_test_result
+      ups_status: sensor.ups3_status_data
+      ups_status_data: sensor.ups3_status
+    path: 007hacky007/ups_monitor.yaml
+
+- alias: UPS Battery and Status Monitor (NUT)
+  description: ''
+  id: '1752543645775'
+  use_blueprint:
+    input:
+      battery_charge: sensor.bedroom_ups_battery_charge
+      battery_voltage: sensor.myups_battery_voltage
+      notify_device: YOUR_NOTIFY_DEVICE_ID
+      self_test_result: sensor.myups_self_test_result
+      ups_status: sensor.bedroom_ups_status_data
+      ups_status_data: sensor.bedroom_ups_status
+    path: 007hacky007/ups_monitor.yaml
+
+- actions:
+  - action: light.turn_on
+    data:
+      transition: 0.5
+    target:
+      entity_id: '{{ target_lights }}'
+  - continue_on_timeout: true
+    timeout: 00:00:03
+    wait_for_trigger:
+    - entity_id: binary_sensor.hallway_sensors
+      for:
+        seconds: 3
+      to: 'off'
+      trigger: state
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ wait.trigger is not none }}'
+      sequence:
+      - action: light.turn_off
+        data:
+          transition: 0.5
+        target:
+          entity_id: '{{ target_lights }}'
+    default:
+    - wait_for_trigger:
+      - entity_id: binary_sensor.hallway_sensors
+        to: 'off'
+        trigger: state
+    - delay: "{% set base = 30 %}  {# base seconds #} {% if use_weather %}\n  {% set weather = states('weather.forecast_home') | lower %}\n  {% set rainy_states = ['rainy', 'pouring', 'lightning-rainy', 'lightning'] %}\n  {% set extra = rain_extra_seconds if weather in rainy_states else 0 %}\n{% else %}\n  {% set extra = 0 %}\n{% endif %} 00:00:{{ '%02d' % (base + extra) }}\n"
+    - action: light.turn_off
+      data:
+        transition: 0.5
+      target:
+        entity_id: '{{ target_lights }}'
+  alias: Hallway Light Sensor - Smart
+  conditions:
+  - condition: template
+    value_template: '{{ not force_skip }}'
+  description: Motion-based hallway light with quick-pass guard and optional rain-aware off delay
+  id: '1756582524360'
+  max_exceeded: silent
+  mode: restart
+  triggers:
+  - entity_id: binary_sensor.hallway_sensors
+    from: 'off'
+    to: 'on'
+    trigger: state
+  variables:
+    force_skip: "{{ skip_light_on and\n    (expand(target_lights)\n     | selectattr('state', 'eq', 'on')\n     | list\n     | length > 0)\n}}\n"
+    rain_extra_seconds: 30
+    skip_light_on: true
+    target_lights:
+    - light.hallway_light
+    use_weather: true
+
+- alias: Laundry Room Sensor
+  description: ''
+  id: '1756596516732'
+  use_blueprint:
+    input:
+      light_target:
+        entity_id: light.laundry_room_lights
+      motion_entity: binary_sensor.laundry_room_sensor
+      no_motion_wait: 25
+    path: homeassistant/motion_light.yaml
+
+- actions:
+  - variables:
+      cur_kwh: '{{ states(''input_number.meter_kwh_current'') | float(0) }}'
+      cur_time: '{{ states(''input_datetime.meter_time_current'') }}'
+      new_kwh: '{{ states(''input_number.new_meter_kwh'') | float(0) }}'
+      new_time: '{{ states(''input_datetime.new_meter_time'') }}'
+  - action: input_number.set_value
+    data:
+      value: '{{ cur_kwh }}'
+    target:
+      entity_id: input_number.meter_kwh_previous
+  - action: input_datetime.set_datetime
+    data:
+      datetime: '{{ cur_time if cur_time else now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+    target:
+      entity_id: input_datetime.meter_time_previous
+  - action: input_number.set_value
+    data:
+      value: '{{ new_kwh }}'
+    target:
+      entity_id: input_number.meter_kwh_current
+  - action: input_datetime.set_datetime
+    data:
+      datetime: '{{ new_time if new_time else now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+    target:
+      entity_id: input_datetime.meter_time_current
+  - action: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: input_number.new_meter_kwh
+  - action: input_datetime.set_datetime
+    data:
+      datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+    target:
+      entity_id: input_datetime.new_meter_time
+  alias: Save Manual Meter Reading
+  description: ''
+  id: save_manual_meter_reading
+  mode: single
+  triggers:
+  - entity_id: input_button.save_new_meter_reading
+    trigger: state
+
+- actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.office_motion_sensor
+        state: 'on'
+      sequence:
+      - action: light.turn_on
+        data:
+          brightness_pct: 100
+        target:
+          entity_id: light.office_lights
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.office_motion_sensor
+        state: 'off'
+      sequence:
+      - delay: 00:00:30
+      - condition: state
+        entity_id: binary_sensor.office_motion_sensor
+        state: 'off'
+      - action: light.turn_off
+        target:
+          entity_id: light.office_lights
+  alias: Office Light Sensor - Smart
+  conditions:
+  - condition: state
+    entity_id: input_boolean.bedtime_mode
+    state: 'off'
+  description: "Custom automation: motion turns light on, no motion for 30s turns it off"
+  id: '1762698295048'
+  mode: restart
+  triggers:
+  - entity_id: binary_sensor.office_motion_sensor
+    from: 'off'
+    to: 'on'
+    trigger: state
+  - entity_id: binary_sensor.office_motion_sensor
+    from: 'on'
+    to: 'off'
+    trigger: state
+
+- alias: Front Door Alexa Doorbell
+  description: ''
+  id: '1762701284098'
+  use_blueprint:
+    input:
+      announcement_volume: 1
+      doorbell: binary_sensor.front_door
+      echo_device1: media_player.matt_s_echo_plus
+      echo_device2: media_player.matt_s_echo_show
+      message: Front Door
+    path: seamus65/doorbell_notify_alexa.yaml
+
+- alias: Side Door Alexa Doorbell
+  description: ''
+  id: '1762701356373'
+  use_blueprint:
+    input:
+      announcement_volume: 1
+      doorbell: binary_sensor.side_door
+      echo_device1: media_player.matt_s_echo_plus
+      echo_device2: media_player.matt_s_echo_show
+      message: Side Door
+    path: seamus65/doorbell_notify_alexa.yaml
+
+- actions:
+  - action: light.turn_on
+    target:
+      entity_id: light.office_lights
+  alias: Test Office Motion Light
+  description: ''
+  id: '1764348483072'
+  triggers:
+  - entity_id: binary_sensor.office_motion_sensor
+    from: 'off'
+    to: 'on'
+    trigger: state
+
+- id: house_bedtime_shutdown
+  alias: House - Bedtime Shutdown
+  description: Shut down common lights and risky devices when bedtime mode is enabled.
+  mode: single
+  triggers:
+  - entity_id: input_boolean.bedtime_mode
+    to: 'on'
+    trigger: state
+  actions:
+  - target:
+      entity_id:
+      - light.living_room_all
+      - light.kitchen_light
+      - light.office_lights
+      - light.hallway_light
+      - light.laundry_room_lights
+    data:
+      transition: 2
+    action: light.turn_off
+  - target:
+      entity_id:
+      - switch.living_room_wax_warmer
+      - switch.kitchen_wax_warmer
+    action: switch.turn_off
+  - target:
+      entity_id:
+      - switch.matt_s_echo_show_do_not_disturb_switch
+      - switch.matt_s_echo_plus_do_not_disturb_switch
+      - switch.echoes_do_not_disturb_switch
+    action: switch.turn_on
+  - data:
+      title: Bedtime Mode Enabled
+      message: Bedtime shutdown ran successfully. Common lights were turned off, wax warmers were shut down, and Echo DND was enabled.
+    action: persistent_notification.create
+
+- id: house_bedtime_quiet_hours_off
+  alias: House - Bedtime Quiet Hours Off
+  description: Disable Echo DND when bedtime mode is turned off.
+  mode: single
+  triggers:
+  - entity_id: input_boolean.bedtime_mode
+    to: 'off'
+    trigger: state
+  actions:
+  - target:
+      entity_id:
+      - switch.matt_s_echo_show_do_not_disturb_switch
+      - switch.matt_s_echo_plus_do_not_disturb_switch
+      - switch.echoes_do_not_disturb_switch
+    action: switch.turn_off
+
+- id: ups_power_outage_response_living_room
+  alias: UPS - Power Outage Response
+  description: Notify and reduce nonessential loads when the living room UPS switches to battery.
+  mode: single
+  triggers:
+  - entity_id:
+    - sensor.living_room_ups_status
+    - sensor.living_room_ups_status_data
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: "{{\n  'OB' in states('sensor.living_room_ups_status_data')\n  or 'on battery' in states('sensor.living_room_ups_status') | lower\n}}\n"
+  actions:
+  - target:
+      entity_id:
+      - switch.living_room_wax_warmer
+      - switch.kitchen_wax_warmer
+    action: switch.turn_off
+  - target:
+      entity_id:
+      - light.breakfast_nook_light
+      - light.living_room_lamp_1
+      - light.living_room_lamp_2
+    data:
+      transition: 1
+    action: light.turn_off
+  - data:
+      title: Power Outage Detected
+      message: "Living Room UPS appears to be on battery power. Runtime remaining: {{ states('sensor.ups2_battery_runtime') }}. Nonessential loads were reduced."
+    action: persistent_notification.create
+
+- id: ups_power_restored_notification_living_room
+  alias: UPS - Power Restored Notification
+  description: Notify when the living room UPS returns to utility power.
+  mode: single
+  triggers:
+  - entity_id: sensor.living_room_ups_status_data
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: "{{ 'OL' in states('sensor.living_room_ups_status_data') }}"
+  actions:
+  - data:
+      title: Power Restored
+      message: Living Room UPS is back on utility power.
+    action: persistent_notification.create
+
+- id: safety_wax_warmers_off_when_unsafe
+  alias: Safety - Wax Warmers Off When Unsafe
+  description: Turn off wax warmers if overheating, overloaded, bedtime mode is on, or Primary user is away.
+  mode: single
+  triggers:
+  - entity_id:
+    - binary_sensor.living_room_wax_warmer_overheated
+    - binary_sensor.living_room_wax_warmer_overloaded
+    - binary_sensor.kitchen_wax_warmer_overheated
+    - binary_sensor.kitchen_wax_warmer_overloaded
+    to: 'on'
+    trigger: state
+  - entity_id: input_boolean.bedtime_mode
+    to: 'on'
+    trigger: state
+  - entity_id: person.primary_user
+    to: not_home
+    for: 00:15:00
+    trigger: state
+  actions:
+  - target:
+      entity_id:
+      - switch.living_room_wax_warmer
+      - switch.kitchen_wax_warmer
+    action: switch.turn_off
+  - data:
+      title: Wax Warmers Turned Off
+      message: "Wax warmers were turned off due to a safety or occupancy rule. Living room overheated: {{ states('binary_sensor.living_room_wax_warmer_overheated') }} Living room overloaded: {{ states('binary_sensor.living_room_wax_warmer_overloaded') }} Kitchen overheated: {{ states('binary_sensor.kitchen_wax_warmer_overheated') }} Kitchen overloaded: {{ states('binary_sensor.kitchen_wax_warmer_overloaded') }} Bedtime mode: {{ states('input_boolean.bedtime_mode') }} Person state: {{ states('person.primary_user') }}"
+    action: persistent_notification.create
+
+- id: hallway_night_path_light
+  alias: Hallway - Night Path Light
+  description: Use the hallway light as a gentle path light during bedtime mode.
+  mode: restart
+  triggers:
+  - entity_id: binary_sensor.hallway_motion_sensor
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.bedtime_mode
+    state: 'on'
+  actions:
+  - target:
+      entity_id: light.hallway_light
+    data:
+      transition: 1
+      brightness_pct: 20
+    action: light.turn_on
+  - wait_for_trigger:
+    - entity_id: binary_sensor.hallway_motion_sensor
+      to: 'off'
+      for: 00:01:30
+      trigger: state
+    timeout: 00:10:00
+    continue_on_timeout: true
+  - condition: state
+    entity_id: binary_sensor.hallway_motion_sensor
+    state: 'off'
+  - target:
+      entity_id: light.hallway_light
+    data:
+      transition: 2
+    action: light.turn_off
+
+- id: house_away_cleanup
+  alias: House - Away Cleanup
+  description: Turn off common lights and warmers after Primary user has been away for 20 minutes.
+  mode: single
+  triggers:
+  - entity_id: person.primary_user
+    to: not_home
+    for: 00:20:00
+    trigger: state
+  actions:
+  - target:
+      entity_id:
+      - light.living_room_all
+      - light.kitchen_light
+      - light.office_lights
+      - light.hallway_light
+      - light.laundry_room_lights
+    data:
+      transition: 2
+    action: light.turn_off
+  - target:
+      entity_id:
+      - switch.living_room_wax_warmer
+      - switch.kitchen_wax_warmer
+    action: switch.turn_off
+  - data:
+      title: Away Cleanup Completed
+      message: Away cleanup ran after Primary User was away for 20 minutes. Common lights and wax warmers were turned off.
+    action: persistent_notification.create
+
+- id: network_guarded_recovery
+  alias: Network - Guarded Recovery
+  description: If WAN appears down for a sustained period while Primary user is home, notify first, then reboot the modem plug during sane hours if still down.
+  mode: single
+  triggers:
+  - entity_id: binary_sensor.tp_link_deco_router_wan_status
+    to: 'off'
+    for: 00:05:00
+    trigger: state
+  - value_template: "{{\n  states('sensor.cable_modem_ping_latency') in ['unknown', 'unavailable']\n  or states('sensor.cable_modem_status') | lower not in ['online', 'up', 'connected']\n}}\n"
+    for: 00:05:00
+    trigger: template
+  conditions:
+  - condition: state
+    entity_id: person.primary_user
+    state: home
+  - condition: time
+    after: 06:00:00
+    before: '23:00:00'
+  actions:
+  - data:
+      title: Network Recovery Watch
+      message: WAN or modem connectivity appears down. Waiting 10 minutes before rebooting the modem plug.
+    action: persistent_notification.create
+  - delay: 00:10:00
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: binary_sensor.tp_link_deco_router_wan_status
+      state: 'off'
+    - condition: template
+      value_template: "{{\n  states('sensor.cable_modem_ping_latency') in ['unknown', 'unavailable']\n  or states('sensor.cable_modem_status') | lower not in ['online', 'up', 'connected']\n}}\n"
+  - target:
+      entity_id: switch.modem_plug
+    action: switch.turn_off
+  - delay: 00:00:20
+  - target:
+      entity_id: switch.modem_plug
+    action: switch.turn_on
+  - data:
+      title: Network Recovery Action Taken
+      message: The modem plug was power-cycled after sustained WAN/modem failure.
+    action: persistent_notification.create
+
+- id: network_recovery_restored_notification
+  alias: Network - Recovery Restored Notification
+  description: Notify when WAN comes back.
+  mode: restart
+  triggers:
+  - entity_id: binary_sensor.tp_link_deco_router_wan_status
+    to: 'on'
+    for: 00:02:00
+    trigger: state
+  actions:
+  - data:
+      title: Network Restored
+      message: WAN connectivity appears to be back up.
+    action: persistent_notification.create
