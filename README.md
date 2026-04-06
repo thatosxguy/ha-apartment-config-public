@@ -1,12 +1,12 @@
-# Apartment Build Backup (Sanitized)
+# Apartment Build Backup =
 
 ## Files included
 
-- `automations_sanitized.yaml`
-- `configuration_sanitized.yaml`
-- `ui-lovelace-matt-apartment-dashboard_sanitized.yaml`
-- `apartment_helpers_sanitized.yaml`
-- `README_sanitized.md`
+- `automations.yaml`
+- `configuration.yaml`
+- `ui-lovelace-matt-apartment-dashboard.yaml`
+- `apartment_helper.yaml`
+- `README.md`
 
 ## Purpose
 
