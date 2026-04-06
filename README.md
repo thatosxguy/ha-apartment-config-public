@@ -23,18 +23,18 @@ These sanitized files are safe to share publicly, but they are **not plug-and-pl
 
 ## Replacements you must make before using them
 
-### In `automations_sanitized.yaml`
+### In `automations.yaml`
 Replace:
 - `person.primary_user` with your real person entity
 - `YOUR_NOTIFY_DEVICE_ID` with your real notify device ID
 - `device_tracker.primary_phone` only if you want that shown anywhere else in your setup
 
-### In `ui-lovelace-matt-apartment-dashboard_sanitized.yaml`
+### In `ui-lovelace-matt-apartment-dashboard.yaml`
 Replace:
 - `person.primary_user` with your real person entity
 - `device_tracker.primary_phone` with your real phone tracker
 
-### In `apartment_helpers_sanitized.yaml`
+### In `apartment_helpers.yaml`
 Replace helper logic only if your door, hallway, or living room entities are named differently.
 
 ## Main goals from this build
@@ -81,25 +81,25 @@ The dashboard includes:
 
 ## Files in this sanitized set
 
-### `automations_sanitized.yaml`
+### `automations.yaml`
 Rewritten automations with personal references removed.
 
-### `configuration_sanitized.yaml`
+### `configuration.yaml`
 Minimal configuration file.
 
-### `ui-lovelace-matt-apartment-dashboard_sanitized.yaml`
+### `ui-lovelace-matt-apartment-dashboard.yaml`
 Multi-view dashboard with personal identifiers generalized.
 
-### `apartment_helpers_sanitized.yaml`
+### `apartment_helpers.yaml`
 Small package file with occupancy helper sensors.
 
 ## Recommended replacement order for private use
 
 1. Back up your current Home Assistant files
-2. Replace `automations.yaml` with `automations_sanitized.yaml`
-3. Replace `configuration.yaml` with `configuration_sanitized.yaml`
-4. Replace `ui-lovelace-matt-apartment-dashboard.yaml` with `ui-lovelace-matt-apartment-dashboard_sanitized.yaml`
-5. Replace or confirm `/config/packages/apartment_helpers.yaml` using `apartment_helpers_sanitized.yaml`
+2. Replace `automations.yaml` with `automations.yaml`
+3. Replace `configuration.yaml` with `configuration.yaml`
+4. Replace `ui-lovelace-dashboard.yaml` with `ui-lovelace-matt-apartment-dashboard.yaml`
+5. Replace or confirm `/config/packages/apartment_helpers.yaml` using `apartment_helper.yaml`
 6. Run **Developer Tools -> YAML -> Check configuration**
 7. If valid, restart Home Assistant
 
